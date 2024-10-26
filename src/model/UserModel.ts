@@ -2,7 +2,7 @@ import mongoose, { Schema, Document } from "mongoose";
 
 // Extend the Document interface to create a User interface for your user model
 export interface User extends Document {
-  id: string; // Required by NextAuth
+  _id: string; // Required by NextAuth
   username: string;
   email: string;
   password: string;
