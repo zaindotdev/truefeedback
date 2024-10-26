@@ -5,26 +5,30 @@ export interface Message extends Document {
   createdAt: Date;
 }
 
-const MesssageSchema: Schema<Message> = new Schema({
-  content: {
-    type: String,
-    required: true
+const MessageSchema: Schema<Message> = new Schema(
+  {
+    content: {
+      type: String,
+      required: true,
+    },
+    createdAt: {
+      type: Date,
+      required: true,
+      default: Date.now,
+    },
   },
-  createdAt: {
-    type: Date,
-    required: true,
-    default: Date.now,
-  }
-}, { timestamps: true })
+  { timestamps: true }
+);
 
 export interface User extends Document {
+  _id: string;  // Explicitly declare _id as a string
   username: string;
   email: string;
   password: string;
   verifyCode: string;
   verifyCodeExpiry: Date;
   isAcceptingMessage: boolean;
-  isVerified: boolean,
+  isVerified: boolean;
   messages: Message[];
 }
 
@@ -33,37 +37,41 @@ const UserSchema: Schema<User> = new Schema({
     type: String,
     required: [true, "Username is required"],
     trim: true,
-    unique: true
+    unique: true,
   },
   email: {
     type: String,
     required: true,
     unique: true,
-    match: [/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, 'Please use a valid email']
+    match: [
+      /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+      "Please use a valid email",
+    ],
   },
-
   password: {
     type: String,
     required: true,
   },
   verifyCode: {
     type: String,
-    required: true
+    required: true,
   },
   verifyCodeExpiry: {
     type: Date,
-    required: true
+    required: true,
   },
   isAcceptingMessage: {
     type: Boolean,
   },
   isVerified: {
     type: Boolean,
-    default: true
+    default: true,
   },
-  messages: [MesssageSchema]
-})
+  messages: [MessageSchema],
+});
 
-const UserModel = (mongoose.models.User as mongoose.Model<User>) || (mongoose.model<User>("User", UserSchema));
+const UserModel =
+  (mongoose.models.User as mongoose.Model<User>) ||
+  mongoose.model<User>("User", UserSchema);
 
 export default UserModel;
