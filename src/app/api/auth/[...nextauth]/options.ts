@@ -14,7 +14,7 @@ export const authOptions: NextAuthOptions = {
         password: { label: 'Password', type: 'password' },
       },
       // Explicitly define the return type as Promise<User | null>
-      async authorize(credentials: Record<'email' | 'password', string> | undefined): Promise<any> {
+      async authorize(credentials: Record<'email' | 'password', string> | undefined): Promise<User | any> {
         if (!credentials || !credentials.email || !credentials.password) {
           throw new Error('Missing email or password');
         }
