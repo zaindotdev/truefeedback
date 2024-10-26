@@ -48,9 +48,11 @@ export default function SignUp() {
         setUsernameMessage(response.data.message);
       } catch (error) {
         const axiosError = error as AxiosError;
-        setUsernameMessage(
-          axiosError.response?.data.message || "Error validating username"
-        );
+        if (axiosError instanceof Error) {
+          setUsernameMessage(
+            axiosError.message || "Unable to Sign up the user"
+          );
+        }
       } finally {
         setIsCheckingUsername(false);
       }
@@ -83,12 +85,13 @@ export default function SignUp() {
       router.replace(`/verify/${values.username}`);
     } catch (error) {
       const axiosError = error as AxiosError;
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description:
-          axiosError.response?.data.message || "Error creating account",
-      });
+      if (axiosError instanceof Error) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: axiosError.message || "Error creating account",
+        });
+      }
     } finally {
       setIsLoading(false);
     }
