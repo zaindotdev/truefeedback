@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const usernameValidation = z.string().trim().min(4, "Username must be atleast 4 characters").max(10, "Username should be no more than 10 characters").regex(/^[a-zA-Z0-9_]+$/, "Username must not contain special characters");
+export const usernameValidation = z.string().trim().min(4, "Username must be atleast 4 characters").max(50, "Username should be no more than 10 characters").regex(/^[a-zA-Z0-9_]+$/, "Username must not contain special characters");
 
 export const signUpSchema = z.object({
   username: usernameValidation,

@@ -1,9 +1,8 @@
-import { NextAuthOptions, User } from 'next-auth';
+import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcrypt';
 import dbConnect from '@/lib/dbConnect';
-import UserModel from '@/model/UserModel';
-
+import UserModel from '@/model/User';
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -14,35 +13,27 @@ export const authOptions: NextAuthOptions = {
         email: { label: 'Email', type: 'text' },
         password: { label: 'Password', type: 'password' },
       },
-      authorize: async (credentials: Record<string, string> | undefined): Promise<User | null> => {
-        if (!credentials || !credentials.email || !credentials.password) {
-          throw new Error('Missing email or password');
-        }
-
+      async authorize(credentials: any): Promise<any> {
         await dbConnect();
-
         try {
           const user = await UserModel.findOne({
             $or: [
-              { email: credentials.email },
-              { username: credentials.email },
+              { email: credentials.identifier },
+              { username: credentials.identifier },
             ],
           });
           if (!user) {
-            throw new Error('No user found with this email or username');
+            throw new Error('No user found with this email');
           }
-
           if (!user.isVerified) {
             throw new Error('Please verify your account before logging in');
           }
-
           const isPasswordCorrect = await bcrypt.compare(
             credentials.password,
             user.password
           );
-
           if (isPasswordCorrect) {
-            return user as User; // Explicitly cast to User to ensure type compatibility
+            return user;
           } else {
             throw new Error('Incorrect password');
           }
@@ -51,8 +42,6 @@ export const authOptions: NextAuthOptions = {
             throw new Error(err.message);
           }
         }
-
-        return null; // Explicit return null if no user is authenticated
       },
     }),
   ],

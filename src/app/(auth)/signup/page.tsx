@@ -49,8 +49,9 @@ export default function SignUp() {
       } catch (error) {
         const axiosError = error as AxiosError;
         if (axiosError instanceof Error) {
+          console.error(axiosError);
           setUsernameMessage(
-            axiosError.message || "Unable to Sign up the user"
+            "User name should be unique and can only contain letters, numbers, and underscores. Also it should be at least 4 characters long."
           );
         }
       } finally {
@@ -89,7 +90,7 @@ export default function SignUp() {
         toast({
           variant: "destructive",
           title: "Error",
-          description: axiosError.message || "Error creating account",
+          description: "User Already Exists",
         });
       }
     } finally {
@@ -133,7 +134,8 @@ export default function SignUp() {
                   )}
                   <p
                     className={`text-sm ${
-                      usernameMessage.includes("exists")
+                      usernameMessage.includes("exists") ||
+                      usernameMessage.includes("4 characters")
                         ? "text-red-500"
                         : "text-green-500"
                     }`}
