@@ -1,5 +1,7 @@
 import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import GoogleProvider from "next-auth/providers/google";
+import FacebookProvider from 'next-auth/providers/facebook'
 import bcrypt from 'bcrypt';
 import dbConnect from '@/lib/dbConnect';
 import UserModel from '@/model/User';
@@ -44,6 +46,15 @@ export const authOptions: NextAuthOptions = {
         }
       },
     }),
+    GoogleProvider({
+      clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_SECRET as string,
+
+    }),
+    FacebookProvider({
+      clientId: process.env.NEXT_PUBLIC_FACEBOOK_CLIENT_ID as string,
+      clientSecret: process.env.NEXT_PUBLIC_FACEBOOK_CLIENT_SECRET as string,
+    })
   ],
   callbacks: {
     async jwt({ token, user }) {

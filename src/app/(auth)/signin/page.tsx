@@ -20,7 +20,7 @@ import { signIn } from "next-auth/react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Truck } from "lucide-react";
 
 export default function SignIn() {
   const { toast } = useToast();
@@ -49,7 +49,7 @@ export default function SignIn() {
         title: "Welcome Back!",
         description: "You have successfully logged in.",
       });
-      router.replace("/dashboard");
+      router.replace(`/dashboard/${values.identifier}`);
     } else if (response?.error === "CredentialsSignin") {
       toast({
         variant: "destructive",
@@ -67,9 +67,29 @@ export default function SignIn() {
     setIsSubmitting(false);
   }
 
+  async function handleGoogleLogin() {
+    const response = await signIn("google", { callbackUrl: "/dashboard" });
+    if (response?.error) {
+      toast({
+        variant: "destructive",
+        title: "Login failed.",
+        description: "An unexpected error occurred. Please try again.",
+      });
+    }
+  }
+  async function handleFacebookLogin() {
+    const response = await signIn("facebook", { callbackUrl: "/dashboard" });
+    if (response?.error) {
+      toast({
+        variant: "destructive",
+        title: "Login failed.",
+        description: "An unexpected error occurred. Please try again.",
+      });
+    }
+  }
   return (
     <section className="w-full h-screen flex items-center justify-center p-8">
-      <div className="space-y-8 border-2 dark:border-white border-black p-8 rounded-xl md:w-1/2 w-full">
+      <div className="container space-y-8 border-2 dark:border-white border-black p-8 rounded-xl">
         <h1 className="text-2xl font-bold leading-none tracking-tight">
           Welcome Back
         </h1>
@@ -85,11 +105,11 @@ export default function SignIn() {
                 name="identifier"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>Email or Username</FormLabel>
                     <FormControl>
                       <Input
                         placeholder="johndoe@email.com"
-                        type="email"
+                        type="text"
                         {...field}
                       />
                     </FormControl>
@@ -125,6 +145,16 @@ export default function SignIn() {
               Sign up
             </Link>
           </p>
+        </div>
+        <div className="flex items-center justify-center">
+          <Button variant={"secondary"} onClick={handleGoogleLogin}>
+            Continue with Google
+          </Button>
+        </div>
+        <div className="flex items-center justify-center">
+          <Button variant={"secondary"} onClick={handleFacebookLogin}>
+            Continue with Facebook
+          </Button>
         </div>
       </div>
     </section>

@@ -3,8 +3,8 @@ import localFont from "next/font/local";
 import "./globals.css";
 import AuthProvider from "@/context/AuthProvider";
 import { ThemeProvider } from "@/components/theme-provider";
-import { ModeToggle } from "@/components/ui/mode-toggle";
 import { Toaster } from "@/components/ui/toaster";
+import AuthContextProvider from "@/context/authContext";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -29,24 +29,23 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <AuthProvider>
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        >
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
+      <AuthContextProvider>
+        <AuthProvider>
+          <body
+            className={`${geistSans.variable} ${geistMono.variable} antialiased`}
           >
-            <div className="absolute z-20 top-8 right-8">
-              <ModeToggle />
-            </div>
-            {children}
-            <Toaster />
-          </ThemeProvider>
-        </body>
-      </AuthProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              {children}
+              <Toaster />
+            </ThemeProvider>
+          </body>
+        </AuthProvider>
+      </AuthContextProvider>
     </html>
   );
 }

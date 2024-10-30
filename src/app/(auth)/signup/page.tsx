@@ -22,8 +22,11 @@ import axios, { AxiosError } from "axios";
 import { ApiResponse } from "@/types/types";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { useAuth } from "@/context/authContext";
+import { signIn } from "next-auth/react";
 
 export default function SignUp() {
+  const { login } = useAuth();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [username, setUsername] = useState<string>("");
   const [isCheckingUsername, setIsCheckingUsername] = useState<boolean>(false);
@@ -74,16 +77,29 @@ export default function SignUp() {
   async function onSubmit(values: z.infer<typeof signUpSchema>) {
     setIsLoading(true);
     try {
-      await axios.post<ApiResponse>(`/api/signup`, {
+      const userAccount = await axios.post<ApiResponse>(`/api/signup`, {
         username: values.username,
         email: values.email,
         password: values.password,
       });
-      toast({
-        title: "Account created.",
-        description: "Your account has been created successfully.",
-      });
-      router.replace(`/verify/${values.username}`);
+      if (userAccount) {
+        const user = await axios.get(`/api/get-user/${values.username}`);
+        if (!user) {
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "User Already Exists",
+          });
+          return;
+        } else {
+          console.log(user);
+          toast({
+            title: "Account created.",
+            description: "Your account has been created successfully.",
+          });
+          router.replace(`/verify/${values.email}`);
+        }
+      }
     } catch (error) {
       const axiosError = error as AxiosError;
       if (axiosError instanceof Error) {
@@ -98,9 +114,20 @@ export default function SignUp() {
     }
   }
 
+  async function handleGoogleLogin() {
+    const response = await signIn("google", { callbackUrl: "/dashboard" });
+    if (response?.error) {
+      toast({
+        variant: "destructive",
+        title: "Login failed.",
+        description: "An unexpected error occurred. Please try again.",
+      });
+    }
+  }
+
   return (
-    <section className="w-full h-screen flex items-center justify-center p-8">
-      <div className="space-y-8 border-2 dark:border-white border-black p-8 rounded-xl md:w-1/2 w-full">
+    <section className="w-full flex justify-center p-4">
+      <div className="space-y-8 border-2 dark:border-white border-black p-8 rounded-xl container max-w-md max-h-fit">
         <h2 className="text-2xl leading-none tracking-tight">
           New to True Feedback?
         </h2>
@@ -197,6 +224,11 @@ export default function SignUp() {
               Sign in
             </Link>
           </p>
+        </div>
+        <div className="flex items-center justify-center">
+          <Button variant={"secondary"} onClick={handleGoogleLogin}>
+            Continue with Google
+          </Button>
         </div>
       </div>
     </section>

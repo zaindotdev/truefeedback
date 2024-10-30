@@ -8,6 +8,7 @@ export async function POST(req: Request) {
   try {
     const { username, email, password } = await req.json();
     const existingUser = await UserModel.findOne({ email });
+    let newUser;
 
     const verifyCode = Math.floor(100000 + Math.random() * 900000).toString();
     if (existingUser) {
@@ -15,6 +16,7 @@ export async function POST(req: Request) {
         return Response.json({
           success: false,
           message: "User already existed with this email",
+          data: existingUser
         }, { status: 400 });
       } else {
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -29,7 +31,7 @@ export async function POST(req: Request) {
       const expiryDate = new Date();
       expiryDate.setHours(expiryDate.getHours() + 1);
 
-      const newUser = new UserModel({
+      newUser = new UserModel({
         username,
         email,
         password: hashedPassword,
@@ -38,28 +40,31 @@ export async function POST(req: Request) {
         messages: [],
         isVerified: false,
         isAcceptingMessage: true,
-      })
+      });
       await newUser.save();
     }
 
-    // send verification email;
+    // Send verification email;
     const emailResponse = await sendVerificationEmail(email, username, verifyCode);
-    if (emailResponse.success) {
+    if (!emailResponse.success) {
       return Response.json({
         success: false,
         message: emailResponse.message,
-      }, { status: 200 })
+      }, { status: 400 });
     }
 
+    // Return the newly created or updated user data
     return Response.json({
       success: true,
       message: "User registered successfully. Please verify the account.",
-    }, { status: 200 })
+      data: newUser || existingUser  // Return the user data
+    }, { status: 200 });
+
   } catch (error) {
     console.error("Error registering user", error);
     return Response.json({
       success: false,
       message: "Failed to register user"
-    }, { status: 500 })
+    }, { status: 500 });
   }
 }
