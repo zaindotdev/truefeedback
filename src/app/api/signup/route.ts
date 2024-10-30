@@ -45,13 +45,8 @@ export async function POST(req: Request) {
     }
 
     // Send verification email;
-    const emailResponse = await sendVerificationEmail(email, username, verifyCode);
-    if (!emailResponse.success) {
-      return Response.json({
-        success: false,
-        message: emailResponse.message,
-      }, { status: 400 });
-    }
+    const emailResponse = await sendVerificationEmail(username, email, verifyCode);
+    console.log({ response: emailResponse.data })
 
     // Return the newly created or updated user data
     return Response.json({

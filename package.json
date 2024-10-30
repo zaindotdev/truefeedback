@@ -17,6 +17,7 @@
     "@radix-ui/react-slot": "^1.1.0",
     "@radix-ui/react-toast": "^1.2.2",
     "@react-email/components": "^0.0.25",
+    "@sendgrid/mail": "^8.1.4",
     "ai": "^3.4.17",
     "axios": "^1.7.7",
     "bcrypt": "^5.1.1",

@@ -45,7 +45,7 @@ const VerifyPage = () => {
           title: "Account verified.",
           description: "Your account has been verified successfully.",
         });
-        router.push("/dashboard");
+        router.push(`/dashboard/${username}`);
       }
     } catch (error) {
       if (error instanceof AxiosError) {

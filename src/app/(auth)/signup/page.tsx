@@ -26,7 +26,6 @@ import { useAuth } from "@/context/authContext";
 import { signIn } from "next-auth/react";
 
 export default function SignUp() {
-  const { login } = useAuth();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [username, setUsername] = useState<string>("");
   const [isCheckingUsername, setIsCheckingUsername] = useState<boolean>(false);
@@ -83,25 +82,15 @@ export default function SignUp() {
         password: values.password,
       });
       if (userAccount) {
-        const user = await axios.get(`/api/get-user/${values.username}`);
-        if (!user) {
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: "User Already Exists",
-          });
-          return;
-        } else {
-          console.log(user);
-          toast({
-            title: "Account created.",
-            description: "Your account has been created successfully.",
-          });
-          router.replace(`/verify/${values.email}`);
-        }
+        toast({
+          title: "Account created",
+          description: "We've created your account for you.",
+        });
+        router.replace(`/verify/${values.username}`);
       }
     } catch (error) {
       const axiosError = error as AxiosError;
+
       if (axiosError instanceof Error) {
         toast({
           variant: "destructive",
