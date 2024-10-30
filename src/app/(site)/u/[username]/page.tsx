@@ -77,33 +77,6 @@ const User = () => {
     }
   }
 
-  const getMessageSuggestion = async () => {
-    try {
-      const response = await axios.get("/api/message-suggestions");
-
-      if ((await response).status !== 200) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Something went wrong. Please try again later.",
-        });
-        return;
-      }
-      console.log({ response });
-    } catch (error) {
-      if (error instanceof Error) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: error.message,
-        });
-      }
-    }
-  };
-
-  React.useEffect(() => {
-    getMessageSuggestion();
-  }, []);
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
       {/* Main Content */}
