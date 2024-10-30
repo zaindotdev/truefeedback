@@ -4,9 +4,6 @@ import EmailTemplate from "@/components/email-template";
 import { ApiResponse } from "@/types/types";
 
 export default async function sendVerificationEmail(email: string, username: string, verifyCode: string): Promise<ApiResponse> {
-  if (!email) {
-    return { success: false, message: "Email is required" }
-  }
   try {
     await resend.emails.send({
       from: "onboarding@resend.dev",
