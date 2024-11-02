@@ -58,8 +58,8 @@ const User = () => {
       if ((await response).status !== 200) {
         toast({
           variant: "destructive",
-          title: "Error",
-          description: "Something went wrong. Please try again later.",
+          title: "Message failed to send",
+          description: "The user might not want to receive the message.",
         });
         return;
       }
@@ -74,8 +74,8 @@ const User = () => {
       if (error instanceof Error) {
         toast({
           variant: "destructive",
-          title: "Error",
-          description: "Something went wrong. Please try again later.",
+          title: "Message failed to send",
+          description: "The user might not want to receive the message.",
         });
       }
     } finally {

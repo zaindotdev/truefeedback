@@ -39,13 +39,14 @@ const VerifyPage = () => {
         username,
         ...data,
       });
+      console.log(response);
 
       if (response.status === 200) {
         toast({
           title: "Account verified.",
           description: "Your account has been verified successfully.",
         });
-        router.push(`/dashboard`);
+        router.push("/signin");
       }
     } catch (error) {
       if (error instanceof AxiosError) {
