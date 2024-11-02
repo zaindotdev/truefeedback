@@ -38,7 +38,7 @@ const Navbar = () => {
           <div className="flex items-center gap-4">
             {status === "authenticated" ? (
               <>
-                <span className="text-sm text-gray-600 dark:text-gray-300">
+                <span className="text-sm text-gray-600 dark:text-gray-300 sm:block hidden">
                   Welcome, {session?.user.name || session?.user.username}
                 </span>
                 <span>

@@ -171,7 +171,7 @@ const Dashboard = () => {
                   Anyone with this link can send you feedback anonymously.
                 </AlertDescription>
               </Alert>
-              <div className="flex items-center gap-4">
+              <div className="md:flex items-center gap-4">
                 <div className="flex-1 bg-gray-50 dark:bg-gray-900 p-3 rounded-lg border border-gray-200 dark:border-gray-700 text-sm font-mono text-gray-900 dark:text-gray-100">
                   {feedbackUrl}
                 </div>
