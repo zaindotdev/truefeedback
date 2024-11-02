@@ -1,7 +1,7 @@
 import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from "next-auth/providers/google";
-import FacebookProvider from 'next-auth/providers/facebook'
+import FacebookProvider from 'next-auth/providers/facebook';
 import bcrypt from 'bcrypt';
 import dbConnect from '@/lib/dbConnect';
 import UserModel from '@/model/User';
@@ -49,7 +49,6 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID as string,
       clientSecret: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_SECRET as string,
-
     }),
     FacebookProvider({
       clientId: process.env.NEXT_PUBLIC_FACEBOOK_CLIENT_ID as string,
@@ -59,7 +58,7 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token._id = user._id?.toString(); // Convert ObjectId to string
+        token._id = user._id?.toString();
         token.isVerified = user.isVerified;
         token.isAcceptingMessages = user.isAcceptingMessages;
         token.username = user.username;
@@ -75,12 +74,51 @@ export const authOptions: NextAuthOptions = {
       }
       return session;
     },
+    async signIn({ user, account, profile }) {
+      try {
+        if (account?.provider === "google") {
+          await dbConnect();
+
+          // Find existing user by email only
+          const existingUser = await UserModel.findOne({
+            $or: [{
+              email: user?.email
+            }, {
+              username: user?.name
+            }]
+          });
+
+          if (existingUser) {
+            // Allow sign-in if the user exists
+            console.log(existingUser)
+            return true;
+          } else {
+            // Create a new user document if it does not exist
+            const newUser = new UserModel({
+              username: profile?.name || user?.name, // Use profile name if available
+              email: user?.email,
+              isVerified: true,
+              isOAuthUser: true,
+            });
+            await newUser.save();
+            console.log(newUser)
+            return true;
+          }
+        }
+
+        // If sign-in provider is not Google, return true to allow sign-in
+        return true;
+      } catch (error) {
+        console.error(error);
+        return false; // Return false if there is an error
+      }
+    }
   },
   session: {
     strategy: 'jwt',
   },
   secret: process.env.NEXT_PUBLIC_NEXT_AUTH_SECRET,
   pages: {
-    signIn: '/sign-in',
+    signIn: '/signin',
   },
 };

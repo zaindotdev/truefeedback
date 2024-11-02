@@ -1,0 +1,294 @@
+"use client";
+import React, { useCallback, useEffect, useState, useMemo, use } from "react";
+import {
+  Copy,
+  MessageSquare,
+  CheckCircle2,
+  Clock,
+  ThumbsUp,
+  Trash,
+} from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import axios, { AxiosError } from "axios";
+import { useToast } from "@/hooks/use-toast";
+import { Message } from "@/model/User";
+import { useSession } from "next-auth/react";
+import { ApiResponse } from "@/types/types";
+import { Form, FormControl, FormField } from "@/components/ui/form";
+import { Switch } from "@/components/ui/switch";
+import { useForm } from "react-hook-form";
+import { acceptMessageSchema } from "@/schemas/acceptMessageSchema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+
+const Dashboard = () => {
+  const { data: session, status } = useSession();
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [copied, setCopied] = useState<boolean>(false);
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const feedbackUrl = useMemo(() => {
+    const baseUrl = `${window.location.protocol}//${window.location.host}`;
+    return `${baseUrl}/u/${session?.user.name || session?.user.username}`;
+  }, [session]);
+
+  const form = useForm<z.infer<typeof acceptMessageSchema>>({
+    defaultValues: { acceptMessage: true },
+    resolver: zodResolver(acceptMessageSchema),
+  });
+
+  const acceptMessages = form.watch("acceptMessage");
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(feedbackUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const fetchAcceptMessages = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const response = await axios.get("/api/accept-messages");
+      if (response.status === 200) {
+        form.setValue("acceptMessage", response.data.isAcceptingMessage);
+      }
+    } catch (error) {
+      const axiosError = error as AxiosError;
+      console.error(axiosError);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const getMessages = useCallback(async () => {
+    try {
+      const response = await axios.get("/api/get-message");
+      if (response.status === 200) setMessages(response.data.messages || []);
+      else showErrorToast();
+    } catch (error) {
+      console.error(error);
+    }
+  }, [toast]);
+
+  const deleteMessage = async (messageId: string) => {
+    try {
+      const response = await axios.delete<ApiResponse>(
+        `/api/delete-message/?messageId=${messageId}`
+      );
+      if (response.status === 200)
+        setMessages((prev) => prev.filter((msg) => msg._id !== messageId));
+      else showErrorToast();
+    } catch (error) {
+      handleAxiosError(error);
+    }
+  };
+  const onSubmit = async (values: z.infer<typeof acceptMessageSchema>) => {
+    try {
+      const response = await axios.post("/api/accept-messages", {
+        isAcceptingMessage: values.acceptMessage,
+      });
+
+      if (response.status === 200) {
+        // Update the form value directly to reflect the change
+        form.setValue("acceptMessage", values.acceptMessage);
+
+        // Display success message
+        toast({
+          title: "Success",
+          description: response.data.message,
+        });
+      }
+    } catch (error) {
+      handleAxiosError(error);
+    }
+  };
+
+  const handleAxiosError = (error: unknown) => {
+    if (error instanceof Error) console.error(error.message);
+    showErrorToast();
+  };
+
+  const showErrorToast = () => {
+    toast({
+      variant: "destructive",
+      title: "Error",
+      description: "Something went wrong. Please try again later.",
+    });
+  };
+
+  useEffect(() => {
+    if (session?.user) {
+      getMessages();
+      fetchAcceptMessages();
+    }
+  }, [getMessages, session, fetchAcceptMessages, form.setValue]);
+
+  if (status !== "authenticated") {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+            <CardHeader>
+              <CardTitle className="text-gray-900 dark:text-gray-100">
+                You must be logged in to view this page
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Alert className="bg-red-50 dark:bg-red-900/30 border-red-200 dark:border-red-800">
+                <AlertDescription className="text-sm text-gray-600 dark:text-gray-300">
+                  You must be logged in to view this page
+                </AlertDescription>
+              </Alert>
+            </CardContent>
+          </Card>
+        </main>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Card className="mb-8 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+          <CardHeader>
+            <CardTitle className="text-gray-900 dark:text-gray-100">
+              Your Feedback URL
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <Alert className="bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800">
+                <AlertDescription className="text-sm text-gray-600 dark:text-gray-300">
+                  Share this URL with people to receive anonymous feedback.
+                  Anyone with this link can send you feedback anonymously.
+                </AlertDescription>
+              </Alert>
+              <div className="flex items-center gap-4">
+                <div className="flex-1 bg-gray-50 dark:bg-gray-900 p-3 rounded-lg border border-gray-200 dark:border-gray-700 text-sm font-mono text-gray-900 dark:text-gray-100">
+                  {feedbackUrl}
+                </div>
+                <Button
+                  onClick={copyToClipboard}
+                  variant={copied ? "outline" : "default"}
+                  className="gap-2"
+                >
+                  {copied ? (
+                    <>
+                      <CheckCircle2 className="h-4 w-4" /> Copied!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-4 w-4" /> Copy URL
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {[
+            {
+              title: "Total Feedback",
+              count: messages.length,
+              Icon: MessageSquare,
+            },
+            { title: "New (Last 24h)", count: 3, Icon: Clock },
+            { title: "Positive Feedback", count: "80%", Icon: ThumbsUp },
+          ].map((stat, idx) => (
+            <Card
+              key={idx}
+              className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+            >
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                      {stat.title}
+                    </p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                      {stat.count}
+                    </p>
+                  </div>
+                  <div className="h-12 w-12 rounded-full flex items-center justify-center bg-opacity-10">
+                    <stat.Icon
+                      className={`h-6 w-6 ${
+                        idx === 0
+                          ? "text-blue-500 dark:text-blue-600"
+                          : idx === 1
+                          ? "text-green-500 dark:text-green-600"
+                          : " text-yellow-500 dark:text-yellow-600"
+                      }`}
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        <Form {...form}>
+          <FormField
+            name="acceptMessage"
+            control={form.control}
+            render={({ field }) => (
+              <div className="mb-8 flex items-center gap-2">
+                Accept Messages
+                <FormControl>
+                  <Switch
+                    {...form.register("acceptMessage")}
+                    checked={acceptMessages}
+                    onCheckedChange={(checked) =>
+                      onSubmit({ acceptMessage: checked })
+                    }
+                    disabled={isLoading}
+                  />
+                </FormControl>
+              </div>
+            )}
+          />
+        </Form>
+
+        <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+          <CardHeader>
+            <CardTitle className="text-gray-900 dark:text-gray-100">
+              Recent Feedback
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4 overflow-y-auto">
+              {messages.length === 0 ? (
+                <Alert>
+                  <AlertDescription>No feedback received yet.</AlertDescription>
+                </Alert>
+              ) : (
+                messages.map((feedback: Message) => (
+                  <div
+                    key={feedback.content}
+                    className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center justify-between"
+                  >
+                    <p className="text-gray-800 dark:text-gray-200">
+                      {feedback.content}
+                    </p>
+                    <Button
+                      onClick={() => deleteMessage(feedback._id as string)}
+                      variant="destructive"
+                    >
+                      <Trash />
+                    </Button>
+                  </div>
+                ))
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </main>
+    </div>
+  );
+};
+
+export default Dashboard;

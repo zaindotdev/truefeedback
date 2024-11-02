@@ -14,10 +14,10 @@ export async function POST(req: Request) {
   }
 
 
-  const userId = user._id;
+  const userEmail = user.email;
   const { isAcceptingMessage } = await req.json();
   try {
-    const updatedUser = await UserModel.findByIdAndUpdate(userId, { isAcceptingMessage }, { new: true });
+    const updatedUser = await UserModel.findOneAndUpdate({ email: userEmail }, { isAcceptingMessage }, { new: true });
 
     if (!updatedUser) {
       return Response.json({ success: false, message: "User not found" }, { status: 404 });
@@ -40,9 +40,9 @@ export async function GET() {
   }
 
 
-  const userId = user._id;
+  const userEmail = user.email;
   try {
-    const foundUser = await UserModel.findById(userId);
+    const foundUser = await UserModel.findOne({ email: userEmail });
     if (!foundUser) {
       return Response.json({ success: false, message: "User not found" }, { status: 404 });
     }

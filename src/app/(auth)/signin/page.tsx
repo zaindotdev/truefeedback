@@ -16,16 +16,18 @@ import {
 import { Input } from "@/components/ui/input";
 import { signInSchema } from "@/schemas/signInSchema";
 import Link from "next/link";
-import { signIn } from "next-auth/react";
+import { signIn, useSession, SignInOptions } from "next-auth/react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { Loader2, Truck } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Loader2 } from "lucide-react";
 
 export default function SignIn() {
   const { toast } = useToast();
   const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { data: session, status } = useSession();
+
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const form = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
@@ -35,51 +37,42 @@ export default function SignIn() {
     },
   });
 
+  // Credential Sign-In Function
   async function onSubmit(values: z.infer<typeof signInSchema>) {
     setIsSubmitting(true);
 
     const response = await signIn("credentials", {
-      redirect: false,
+      redirect: false, // Handle redirection manually
       identifier: values.identifier,
       password: values.password,
     });
 
     if (response?.ok) {
+      const sanitizedIdentifier = values.identifier.replace(/\s+/g, "-");
+
       toast({
         title: "Welcome Back!",
         description: "You have successfully logged in.",
       });
-      router.replace(`/dashboard/${values.identifier}`);
-    } else if (response?.error === "CredentialsSignin") {
-      toast({
-        variant: "destructive",
-        title: "Invalid credentials.",
-        description: "Please check your email and password.",
-      });
+
+      // Redirect to dashboard with sanitized identifier
+      router.replace(`/dashboard`);
     } else {
       toast({
         variant: "destructive",
         title: "Login failed.",
-        description: "An unexpected error occurred. Please try again.",
+        description: "Please check your email and password.",
       });
     }
 
     setIsSubmitting(false);
   }
 
+  // Google Sign-In Function
   async function handleGoogleLogin() {
-    const response = await signIn("google", { callbackUrl: "/dashboard" });
-    if (response?.error) {
-      toast({
-        variant: "destructive",
-        title: "Login failed.",
-        description: "An unexpected error occurred. Please try again.",
-      });
-    }
-  }
-  async function handleFacebookLogin() {
-    const response = await signIn("facebook", { callbackUrl: "/dashboard" });
-    if (response?.error) {
+    try {
+      const response = await signIn("google", { callbackUrl: "/dashboard" });
+    } catch (error) {
       toast({
         variant: "destructive",
         title: "Login failed.",
@@ -88,8 +81,8 @@ export default function SignIn() {
     }
   }
   return (
-    <section className="w-full h-screen flex items-center justify-center p-8">
-      <div className="container space-y-8 border-2 dark:border-white border-black p-8 rounded-xl">
+    <section className="w-full flex justify-center items-center p-8 min-h-screen">
+      <div className="space-y-8 border-2 dark:border-white border-black p-8 rounded-xl container max-w-md max-h-fit">
         <h1 className="text-2xl font-bold leading-none tracking-tight">
           Welcome Back
         </h1>
@@ -105,13 +98,9 @@ export default function SignIn() {
                 name="identifier"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email or Username</FormLabel>
+                    <FormLabel>Username</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="johndoe@email.com"
-                        type="text"
-                        {...field}
-                      />
+                      <Input placeholder="johndoe" type="text" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -149,11 +138,6 @@ export default function SignIn() {
         <div className="flex items-center justify-center">
           <Button variant={"secondary"} onClick={handleGoogleLogin}>
             Continue with Google
-          </Button>
-        </div>
-        <div className="flex items-center justify-center">
-          <Button variant={"secondary"} onClick={handleFacebookLogin}>
-            Continue with Facebook
           </Button>
         </div>
       </div>

@@ -45,7 +45,7 @@ const VerifyPage = () => {
           title: "Account verified.",
           description: "Your account has been verified successfully.",
         });
-        router.push(`/dashboard/${username}`);
+        router.push(`/dashboard`);
       }
     } catch (error) {
       if (error instanceof AxiosError) {
@@ -67,7 +67,7 @@ const VerifyPage = () => {
     <div className="flex h-screen items-center justify-center">
       <div className="border-2 dark:border-white border-black p-8 rounded-xl max-w-md text-center">
         <h1 className="text-3xl font-bold tracking-tight leading-none mb-4">
-          Hello, {username}!
+          Hello, @{username}!
         </h1>
         <p className="text-lg mb-6">
           A verification code has been sent to your email. Please enter it below

@@ -115,7 +115,7 @@ export default function SignUp() {
   }
 
   return (
-    <section className="w-full flex justify-center p-4">
+    <section className="w-full flex justify-center p-8">
       <div className="space-y-8 border-2 dark:border-white border-black p-8 rounded-xl container max-w-md max-h-fit">
         <h2 className="text-2xl leading-none tracking-tight">
           New to True Feedback?

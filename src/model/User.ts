@@ -21,7 +21,7 @@ const MessageSchema: Schema<Message> = new Schema(
 );
 
 export interface User extends Document {
-  _id: string;  // Explicitly declare _id as a string
+  _id: string;
   username: string;
   email: string;
   password: string;
@@ -29,6 +29,7 @@ export interface User extends Document {
   verifyCodeExpiry: Date;
   isAcceptingMessage: boolean;
   isVerified: boolean;
+  isOAuthUser: boolean;
   messages: Message[];
 }
 
@@ -50,24 +51,38 @@ const UserSchema: Schema<User> = new Schema({
   },
   password: {
     type: String,
-    required: true,
+    required: function () {
+      return !this.isOAuthUser;
+    },
   },
   verifyCode: {
     type: String,
-    required: true,
+    required: function () {
+      return !this.isOAuthUser;
+    },
   },
   verifyCodeExpiry: {
     type: Date,
-    required: true,
+    required: function () {
+      return !this.isOAuthUser;
+    },
   },
   isAcceptingMessage: {
     type: Boolean,
+    default: true,
   },
   isVerified: {
     type: Boolean,
-    default: true,
+    default: false,
   },
-  messages: [MessageSchema],
+  isOAuthUser: {
+    type: Boolean,
+    default: false,
+  },
+  messages: {
+    type: [MessageSchema],
+    default: [],
+  },
 });
 
 const UserModel =

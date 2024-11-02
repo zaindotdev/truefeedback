@@ -26,10 +26,16 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
 import axios from "axios";
+import { useSession } from "next-auth/react";
 
 const User = () => {
   const { username } = useParams();
+  const { status } = useSession();
   const { toast } = useToast();
+  const sanitizedUsername = Array.isArray(username)
+    ? username[0].replace("%20", " ")
+    : username?.replace("%20", " ");
+
   const [isSubmitting, setIsSubmitting] = React.useState<boolean>(false);
 
   const form = useForm<z.infer<typeof messageSchema>>({
@@ -45,7 +51,7 @@ const User = () => {
       // Handle form submission
 
       const response = axios.post(`/api/send-message`, {
-        username,
+        username: sanitizedUsername,
         content: values.content,
       });
 
@@ -69,7 +75,7 @@ const User = () => {
         toast({
           variant: "destructive",
           title: "Error",
-          description: error.message,
+          description: "Something went wrong. Please try again later.",
         });
       }
     } finally {
@@ -77,15 +83,42 @@ const User = () => {
     }
   }
 
+  if (status !== "authenticated") {
+    return (
+      <div className="min-h-screen bg-white dark:bg-black transition-colors duration-200">
+        <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+            <CardHeader>
+              <CardTitle className="text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                <Shield className="h-5 w-5" />
+                Login to send feedback
+              </CardTitle>
+              <CardDescription className="text-gray-600 dark:text-gray-400">
+                Login to send feedback to @{sanitizedUsername}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="text-gray-600 dark:text-gray-400">
+              <p className="text-sm">
+                Login to send feedback to @{sanitizedUsername}. Your feedback
+                will be completely anonymous. No personal information will be
+                collected or shared.
+              </p>
+            </CardContent>
+          </Card>
+        </main>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+    <div className="min-h-screen bg-white dark:bg-black transition-colors duration-200">
       {/* Main Content */}
       <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
           <CardHeader>
             <CardTitle className="text-gray-900 dark:text-gray-100 flex items-center gap-2">
               <MessageSquare className="h-5 w-5" />
-              Send Feedback to @{username}
+              Send Feedback to @{sanitizedUsername}
             </CardTitle>
             <CardDescription className="text-gray-600 dark:text-gray-400">
               Your feedback will be completely anonymous. No personal
