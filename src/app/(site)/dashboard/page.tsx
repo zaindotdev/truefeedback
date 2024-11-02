@@ -172,13 +172,13 @@ const Dashboard = () => {
                 </AlertDescription>
               </Alert>
               <div className="md:flex items-center gap-4">
-                <div className="flex-1 bg-gray-50 dark:bg-gray-900 p-3 rounded-lg border border-gray-200 dark:border-gray-700 text-sm font-mono text-gray-900 dark:text-gray-100">
+                <div className="flex-1  bg-gray-50 dark:bg-gray-900 p-3 rounded-lg border border-gray-200 dark:border-gray-700 text-sm font-mono text-gray-900 dark:text-gray-100">
                   {feedbackUrl}
                 </div>
                 <Button
                   onClick={copyToClipboard}
                   variant={copied ? "outline" : "default"}
-                  className="gap-2"
+                  className="gap-2 mt-4"
                 >
                   {copied ? (
                     <>
