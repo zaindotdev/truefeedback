@@ -178,7 +178,7 @@ const Dashboard = () => {
                 <Button
                   onClick={copyToClipboard}
                   variant={copied ? "outline" : "default"}
-                  className="gap-2 mt-4"
+                  className="gap-2 sm:mt-0 mt-4"
                 >
                   {copied ? (
                     <>
