@@ -29,10 +29,15 @@ const Dashboard = () => {
   const [copied, setCopied] = useState<boolean>(false);
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [feedbackUrl, setFeedbackUrl] = useState<string>("");
 
-  const feedbackUrl = useMemo(() => {
-    const baseUrl = `${window.location.protocol}//${window.location.host}`;
-    return `${baseUrl}/u/${session?.user.name || session?.user.username}`;
+  useEffect(() => {
+    if (typeof window !== "undefined" && session?.user) {
+      const baseUrl = `${window.location.protocol}//${window.location.host}`;
+      setFeedbackUrl(
+        `${baseUrl}/u/${session.user.name || session.user.username}`
+      );
+    }
   }, [session]);
 
   const form = useForm<z.infer<typeof acceptMessageSchema>>({
