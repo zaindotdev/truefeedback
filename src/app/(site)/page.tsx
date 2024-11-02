@@ -1,9 +1,18 @@
 "use client";
 import { useSession } from "next-auth/react";
-import React from "react";
+import { useRouter } from "next/navigation";
+import React, { useEffect } from "react";
 
 const Home = () => {
   const { status } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (status !== "authenticated") {
+      router.replace("/signin");
+    }
+    router.replace("/dashboard");
+  }, [status]);
   if (status !== "authenticated") {
     return (
       <div className="flex justify-center items-center h-screen">
