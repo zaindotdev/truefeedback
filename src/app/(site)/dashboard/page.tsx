@@ -30,13 +30,12 @@ const Dashboard = () => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [feedbackUrl, setFeedbackUrl] = useState<string>("");
-
+  const username = session?.user?.name || session?.user?.username;
+  const sanitizedUsername = username?.replace(" ", "%20");
   useEffect(() => {
     if (typeof window !== "undefined" && session?.user) {
       const baseUrl = `${window.location.protocol}//${window.location.host}`;
-      setFeedbackUrl(
-        `${baseUrl}/u/${session.user.name || session.user.username}`
-      );
+      setFeedbackUrl(`${baseUrl}/u/${sanitizedUsername}`);
     }
   }, [session]);
 
