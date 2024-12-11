@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "clear":"next build --clear"
+    "clear": "next build --clear"
   },
   "dependencies": {
     "@ai-sdk/openai": "^0.0.68",
@@ -36,6 +36,7 @@
     "react": "^18",
     "react-dom": "^18",
     "react-hook-form": "^7.53.1",
+    "react-icons": "^5.4.0",
     "resend": "^4.0.0",
     "tailwind-merge": "^2.5.4",
     "tailwindcss-animate": "^1.0.7",

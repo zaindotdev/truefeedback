@@ -29,7 +29,7 @@ const Home = () => {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 p-4">
+    <div className="flex flex-col items-center justify-center min-h-screen dark:bg-gray-900 p-4">
       <Card className="w-full max-w-4xl">
         <CardHeader className="text-center">
           <CardTitle className="text-4xl font-bold text-blue-600">
@@ -81,7 +81,7 @@ const FeatureCard:React.FC<FeatureCardProps> = ({ icon, title, description }) =>
 );
 
 const LoadingSkeleton = () => (
-  <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-blue-100 to-white p-4">
+  <div className="flex flex-col items-center justify-center min-h-screen dark:bg-gray-900 p-4">
     <Card className="w-full max-w-4xl">
       <CardHeader className="text-center">
         <Skeleton className="h-8 w-3/4 mx-auto" />

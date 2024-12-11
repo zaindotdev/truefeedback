@@ -24,6 +24,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/context/authContext";
 import { signIn } from "next-auth/react";
+import {FaGoogle} from "react-icons/fa"
 
 export default function SignUp() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -216,7 +217,7 @@ export default function SignUp() {
         </div>
         <div className="flex items-center justify-center">
           <Button variant={"secondary"} onClick={handleGoogleLogin}>
-            Continue with Google
+            <FaGoogle /> Continue with Google
           </Button>
         </div>
       </div>

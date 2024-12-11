@@ -21,6 +21,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
+import { FaGoogle } from "react-icons/fa";
 
 export default function SignIn() {
   const { toast } = useToast();
@@ -137,7 +138,7 @@ export default function SignIn() {
         </div>
         <div className="flex items-center justify-center">
           <Button variant={"secondary"} onClick={handleGoogleLogin}>
-            Continue with Google
+            <FaGoogle/>Continue with Google
           </Button>
         </div>
       </div>
