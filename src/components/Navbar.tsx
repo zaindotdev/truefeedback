@@ -48,12 +48,14 @@ const Navbar = () => {
                 </span>
               </>
             ) : (
-              <span>
+                <span>
                 <Button
-                  size={"icon"}
+                  className="flex items-center justify-center gap-2"
+                  size={"lg"}
                   variant={"outline"}
                   onClick={() => router.replace("/signin")}
-                >
+                  >
+                    <p className="sm:block hidden">Login</p>
                   <LogIn />
                 </Button>
               </span>

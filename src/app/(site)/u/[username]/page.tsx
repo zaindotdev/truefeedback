@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { Send, Shield, Lock, MessageSquare } from "lucide-react";
+import { Send, Shield, Lock, MessageSquare, Loader2 } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -30,7 +30,7 @@ import { useSession } from "next-auth/react";
 
 const User = () => {
   const { username } = useParams();
-  const { status } = useSession();
+  const { status, data: session } = useSession();
   const { toast } = useToast();
   const sanitizedUsername = Array.isArray(username)
     ? username[0].replace("%20", " ")
@@ -44,71 +44,59 @@ const User = () => {
     },
     resolver: zodResolver(messageSchema),
   });
+ async function onSubmit(values: z.infer<typeof messageSchema>) {
+   setIsSubmitting(true);
+   try {
+     if (session?.user?.name === sanitizedUsername) {
+       // User is trying to message themselves
+       toast({
+         variant: "destructive",
+         title: "Cannot send feedback to yourself",
+         description: "Please use another user's feedback page.",
+       });
+       return;
+     }
 
-  async function onSubmit(values: z.infer<typeof messageSchema>) {
-    setIsSubmitting(true);
-    try {
-      // Handle form submission
+     // Proceed to send the message if not messaging themselves
+     const response = await axios.post(`/api/send-message`, {
+       username: sanitizedUsername,
+       content: values.content,
+     });
 
-      const response = axios.post(`/api/send-message`, {
-        username: sanitizedUsername,
-        content: values.content,
-      });
+     if (response.status !== 200) {
+       toast({
+         variant: "destructive",
+         title: "Message failed to send",
+         description: "The user might not want to receive the message.",
+       });
+       return;
+     }
 
-      if ((await response).status !== 200) {
-        toast({
-          variant: "destructive",
-          title: "Message failed to send",
-          description: "The user might not want to receive the message.",
-        });
-        return;
-      }
+     form.reset();
+     toast({
+       title: "Feedback sent",
+       description: "Your feedback has been successfully submitted.",
+     });
+   } catch (error) {
+     if (error instanceof Error) {
+       toast({
+         variant: "destructive",
+         title: "Message failed to send",
+         description: "There was an error processing your request.",
+       });
+     }
+   } finally {
+     setIsSubmitting(false);
+   }
+ }
 
-      form.reset();
-      console.log(values);
-      toast({
-        title: "Feedback sent",
-        description: "Your feedback has been successfully submitted.",
-      });
-    } catch (error) {
-      if (error instanceof Error) {
-        toast({
-          variant: "destructive",
-          title: "Message failed to send",
-          description: "The user might not want to receive the message.",
-        });
-      }
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
-  if (status !== "authenticated") {
-    return (
-      <div className="min-h-screen bg-white dark:bg-black transition-colors duration-200">
-        <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-            <CardHeader>
-              <CardTitle className="text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                <Shield className="h-5 w-5" />
-                Login to send feedback
-              </CardTitle>
-              <CardDescription className="text-gray-600 dark:text-gray-400">
-                Login to send feedback to @{sanitizedUsername}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="text-gray-600 dark:text-gray-400">
-              <p className="text-sm">
-                Login to send feedback to @{sanitizedUsername}. Your feedback
-                will be completely anonymous. No personal information will be
-                collected or shared.
-              </p>
-            </CardContent>
-          </Card>
-        </main>
-      </div>
-    );
-  }
+   if (status === "loading") {
+     return (
+       <div className="min-h-screen flex items-center justify-center">
+         <Loader2 className="animate-spin w-10 h-10" />
+       </div>
+     );
+   }
 
   return (
     <div className="min-h-screen bg-white dark:bg-black transition-colors duration-200">

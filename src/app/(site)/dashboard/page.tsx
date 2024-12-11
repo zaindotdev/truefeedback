@@ -7,6 +7,7 @@ import {
   Clock,
   ThumbsUp,
   Trash,
+  Loader2,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -132,23 +133,8 @@ const Dashboard = () => {
 
   if (status !== "authenticated") {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-            <CardHeader>
-              <CardTitle className="text-gray-900 dark:text-gray-100">
-                You must be logged in to view this page
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Alert className="bg-red-50 dark:bg-red-900/30 border-red-200 dark:border-red-800">
-                <AlertDescription className="text-sm text-gray-600 dark:text-gray-300">
-                  You must be logged in to view this page
-                </AlertDescription>
-              </Alert>
-            </CardContent>
-          </Card>
-        </main>
+      <div className="min-h-screen flex items-center justify-center">
+          <Loader2 className="animate-spin w-10 h-10"/>
       </div>
     );
   }
