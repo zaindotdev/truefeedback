@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { Send, Shield, Lock, MessageSquare, Loader2 } from "lucide-react";
+import { Send, Shield, Lock, MessageSquare, Loader2, AlertTriangleIcon } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -47,17 +47,7 @@ const User = () => {
  async function onSubmit(values: z.infer<typeof messageSchema>) {
    setIsSubmitting(true);
    try {
-     if (session?.user?.name === sanitizedUsername) {
-       // User is trying to message themselves
-       toast({
-         variant: "destructive",
-         title: "Cannot send feedback to yourself",
-         description: "Please use another user's feedback page.",
-       });
-       return;
-     }
-
-     // Proceed to send the message if not messaging themselves
+          // Proceed to send the message if not messaging themselves
      const response = await axios.post(`/api/send-message`, {
        username: sanitizedUsername,
        content: values.content,
@@ -98,6 +88,20 @@ const User = () => {
      );
    }
 
+  if(session?.user.username === sanitizedUsername || session?.user.name === sanitizedUsername) {
+    return (
+      <div className="flex justify-center p-8">
+        <Alert variant={"destructive"}>
+          <div className="flex items-center gap-2">
+            <AlertTriangleIcon size={16} />
+            <AlertDescription>
+              You cannot send feedback to yourself.
+            </AlertDescription>
+          </div>
+        </Alert>
+      </div>
+    );
+  }
   return (
     <div className="min-h-screen bg-white dark:bg-black transition-colors duration-200">
       {/* Main Content */}
@@ -144,7 +148,7 @@ const User = () => {
                       </FormControl>
                       <FormMessage />
                       <p className="text-sm text-gray-500 dark:text-gray-400">
-                        {field.value.length}/1000 characters
+                        {field.value.length}/255 characters
                       </p>
                     </FormItem>
                   )}

@@ -23,6 +23,8 @@ import { useForm } from "react-hook-form";
 import { acceptMessageSchema } from "@/schemas/acceptMessageSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { Dialog, DialogTrigger,DialogClose,DialogContent,DialogFooter,DialogHeader, DialogDescription, DialogTitle, } from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
 
 const Dashboard = () => {
   const { data: session, status } = useSession();
@@ -33,6 +35,7 @@ const Dashboard = () => {
   const [feedbackUrl, setFeedbackUrl] = useState<string>("");
   const username = session?.user?.name || session?.user?.username;
   const sanitizedUsername = username?.replace(" ", "%20");
+  const [deletingMessage, setDeletingMessage] = useState<boolean>(false);
   useEffect(() => {
     if (typeof window !== "undefined" && session?.user) {
       const baseUrl = `${window.location.protocol}//${window.location.host}`;
@@ -138,7 +141,6 @@ const Dashboard = () => {
       </div>
     );
   }
-
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -264,12 +266,42 @@ const Dashboard = () => {
                     <p className="text-gray-800 dark:text-gray-200">
                       {feedback.content}
                     </p>
-                    <Button
-                      onClick={() => deleteMessage(feedback._id as string)}
-                      variant="destructive"
-                    >
-                      <Trash />
-                    </Button>
+                      
+                    
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button
+                            onClick={() => setDeletingMessage(true)}
+                            variant="destructive"
+                            aria-label="Delete feedback"
+                          >
+                            <Trash />
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Delete Feedback</DialogTitle>
+                            <DialogDescription>
+                              Are you sure you want to delete this feedback?
+                              This action cannot be undone.
+                            </DialogDescription>
+                          </DialogHeader>
+                          <Separator />
+                          <DialogFooter>
+                            <Button
+                              variant="destructive"
+                              onClick={() =>
+                                deleteMessage(feedback?._id as string)
+                              }
+                            >
+                              Delete
+                            </Button>
+                            <DialogClose asChild>
+                              <Button variant="secondary">Cancel</Button>
+                            </DialogClose>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
                   </div>
                 ))
               )}

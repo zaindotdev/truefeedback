@@ -131,7 +131,7 @@ export default function SignIn() {
         <div className="text-sm">
           <p className="text-center">
             Don&apos;t have an account?{" "}
-            <Link className="hover:underline text-blue-800" href="/signup">
+            <Link className="hover:underline text-gray-100" href="/signup">
               Sign up
             </Link>
           </p>
