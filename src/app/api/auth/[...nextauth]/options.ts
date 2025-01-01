@@ -90,7 +90,6 @@ export const authOptions: NextAuthOptions = {
 
           if (existingUser) {
             // Allow sign-in if the user exists
-            console.log(existingUser)
             return true;
           } else {
             // Create a new user document if it does not exist
@@ -101,7 +100,6 @@ export const authOptions: NextAuthOptions = {
               isOAuthUser: true,
             });
             await newUser.save();
-            console.log(newUser)
             return true;
           }
         }

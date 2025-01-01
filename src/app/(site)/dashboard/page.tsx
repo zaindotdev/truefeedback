@@ -1,5 +1,5 @@
 "use client";
-import React, { useCallback, useEffect, useState, useMemo, use } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Copy,
   MessageSquare,
@@ -25,6 +25,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Dialog, DialogTrigger,DialogClose,DialogContent,DialogFooter,DialogHeader, DialogDescription, DialogTitle, } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const Dashboard = () => {
   const { data: session, status } = useSession();
@@ -35,13 +44,25 @@ const Dashboard = () => {
   const [feedbackUrl, setFeedbackUrl] = useState<string>("");
   const username = session?.user?.name || session?.user?.username;
   const sanitizedUsername = username?.replace(" ", "%20");
+  const [feedbackCategory, setFeedbackCategory] = useState<string>("teaching");
   const [deletingMessage, setDeletingMessage] = useState<boolean>(false);
+  const selectOptions = [
+    { value: "teaching", label: "Teaching" },
+    { value: "learning", label: "Learning" },
+    { value: "assessment", label: "Assessment" },
+    {value:"other", label:"Other"}
+  ]
+
   useEffect(() => {
     if (typeof window !== "undefined" && session?.user) {
       const baseUrl = `${window.location.protocol}//${window.location.host}`;
-      setFeedbackUrl(`${baseUrl}/u/${sanitizedUsername}`);
+      setFeedbackUrl(`${baseUrl}/u/${sanitizedUsername}?category=${feedbackCategory}`);
     }
-  }, [session]);
+  }, [session, feedbackCategory, sanitizedUsername]);
+  
+  const onValueChange = (value: string) => {
+    setFeedbackCategory(value);
+  }
 
   const form = useForm<z.infer<typeof acceptMessageSchema>>({
     defaultValues: { acceptMessage: true },
@@ -93,6 +114,7 @@ const Dashboard = () => {
       handleAxiosError(error);
     }
   };
+
   const onSubmit = async (values: z.infer<typeof acceptMessageSchema>) => {
     try {
       const response = await axios.post("/api/accept-messages", {
@@ -161,6 +183,26 @@ const Dashboard = () => {
               <div className="md:flex items-center gap-4">
                 <div className="flex-1  bg-gray-50 dark:bg-gray-900 p-3 rounded-lg border border-gray-200 dark:border-gray-700 text-sm font-mono text-gray-900 dark:text-gray-100">
                   {feedbackUrl}
+                </div>
+                <div className="flex items-center gap-2 border-[2px] dark:border-gray-200 border-gray-900 rounded-lg">
+                  <Select
+                    value={feedbackCategory}
+                    onValueChange={onValueChange}
+                  >
+                    <SelectTrigger className="w-[220px]">
+                      <SelectValue placeholder="Select a Category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>Select a Category</SelectLabel>
+                        {selectOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <Button
                   onClick={copyToClipboard}
@@ -259,15 +301,20 @@ const Dashboard = () => {
                 </Alert>
               ) : (
                 messages.map((feedback: Message) => (
-                  <div
-                    key={feedback.content}
-                    className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center justify-between"
-                  >
-                    <p className="text-gray-800 dark:text-gray-200">
-                      {feedback.content}
-                    </p>
-                      
-                    
+                  <div className="space-y-4" key={feedback.content}>
+                    {/* Category Section */}
+                    <div className="bg-gray-200 dark:bg-gray-700 p-4 rounded-lg flex flex-col gap-2">
+                      <h3 className="text-gray-700 dark:text-gray-300 text-sm font-semibold uppercase tracking-wide">
+                        Category
+                      </h3>
+                      <p className="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm font-medium p-4 rounded-md capitalize">
+                        {feedback.category}
+                      </p>
+                      <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                      <p className="text-gray-800 dark:text-gray-200">
+                        {feedback.content}
+                      </p>
+
                       <Dialog>
                         <DialogTrigger asChild>
                           <Button
@@ -287,7 +334,7 @@ const Dashboard = () => {
                             </DialogDescription>
                           </DialogHeader>
                           <Separator />
-                          <DialogFooter>
+                          <DialogFooter className="flex md:flex-row flex-col gap-2">
                             <Button
                               variant="destructive"
                               onClick={() =>
@@ -302,8 +349,10 @@ const Dashboard = () => {
                           </DialogFooter>
                         </DialogContent>
                       </Dialog>
+                    </div>
                   </div>
-                ))
+                </div>
+               ))
               )}
             </div>
           </CardContent>

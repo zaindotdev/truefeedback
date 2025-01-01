@@ -1,13 +1,19 @@
 import mongoose, { Schema, Document } from "mongoose";
 
+// Message Schema
 export interface Message extends Document {
   content: string;
+  category: string;
   createdAt: Date;
 }
 
 const MessageSchema: Schema<Message> = new Schema(
   {
     content: {
+      type: String,
+      required: true,
+    },
+    category: {
       type: String,
       required: true,
     },
@@ -20,6 +26,8 @@ const MessageSchema: Schema<Message> = new Schema(
   { timestamps: true }
 );
 
+
+// User Schema
 export interface User extends Document {
   _id: string;
   username: string;

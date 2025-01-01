@@ -1,7 +1,9 @@
+"use client";
 import { cn } from "@/lib/utils";
 import Marquee from "@/components/ui/marquee";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 const reviews = [
   {
@@ -56,13 +58,12 @@ const ReviewCard = ({
   username: string;
   body: string;
 }) => {
+ 
   return (
     <figure
       className={cn(
         "relative w-64 cursor-pointer overflow-hidden rounded-xl border p-4",
-        // light styles
         "border-gray-950/[.1] bg-gray-950/[.01] hover:bg-gray-950/[.05]",
-        // dark styles
         "dark:border-gray-50/[.1] dark:bg-gray-50/[.10] dark:hover:bg-gray-50/[.15]"
       )}
     >
@@ -81,22 +82,40 @@ const ReviewCard = ({
 };
 
 export default function Home() {
+  const { status } = useSession();
+  const router = useRouter();
+
+  const handleClick = function () {
+    if (status === "unauthenticated") {
+     router.push("/signin");
+    } else {
+      router.push("/dashboard")
+    }
+  }
   return (
     <div className="relative flex h-screen w-full flex-col items-center justify-center overflow-hidden rounded-lg border bg-background md:shadow-xl">
-      <Marquee pauseOnHover className="[--duration:20s]">
-        {firstRow.map((review) => (
-          <ReviewCard key={review.username} {...review} />
-        ))}
-      </Marquee>
-      <Marquee reverse pauseOnHover className="[--duration:20s]">
-        {secondRow.map((review) => (
-          <ReviewCard key={review.username} {...review} />
-        ))}
-      </Marquee>
+      <div className="flex flex-col items-center justify-center gap-4 mb-8">
+        <h1 className="text-center text-6xl text-primary font-semibold flex flex-col gap-2">
+          <span className="text-4xl font-bold">Welcome to {" "}</span>
+          <span className="text-5xl font-bold text-primary">True Feedback</span>
+        </h1>
+      </div>
+      <div>
+        <Marquee pauseOnHover className="[--duration:20s]">
+          {firstRow.map((review) => (
+            <ReviewCard key={review.username} {...review} />
+          ))}
+        </Marquee>
+        <Marquee reverse pauseOnHover className="[--duration:20s]">
+          {secondRow.map((review) => (
+            <ReviewCard key={review.username} {...review} />
+          ))}
+        </Marquee>
+      </div>
       <div className="pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-white dark:from-background"></div>
       <div className="pointer-events-none absolute inset-y-0 right-0 w-1/3 bg-gradient-to-l from-white dark:from-background"></div>
-      <Button className="mt-8">
-        <Link href={"/signin"}>Get Started</Link>
+      <Button className="mt-8" onClick={handleClick}>
+        Get Started
       </Button>
     </div>
   );

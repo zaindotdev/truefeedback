@@ -18,7 +18,7 @@ import { signInSchema } from "@/schemas/signInSchema";
 import Link from "next/link";
 import { signIn, useSession, SignInOptions } from "next-auth/react";
 import { useToast } from "@/hooks/use-toast";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { FaGoogle } from "react-icons/fa";
@@ -27,6 +27,8 @@ export default function SignIn() {
   const { toast } = useToast();
   const router = useRouter();
   const { data: session, status } = useSession();
+  const searchParams = useSearchParams();
+  const returnUrl = searchParams.get("returnUrl");
 
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
@@ -37,6 +39,12 @@ export default function SignIn() {
       password: "",
     },
   });
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.push(returnUrl || "/dashboard");
+    }
+  }, [status, router, returnUrl, toast]);
 
   // Credential Sign-In Function
   async function onSubmit(values: z.infer<typeof signInSchema>) {
@@ -72,7 +80,7 @@ export default function SignIn() {
   // Google Sign-In Function
   async function handleGoogleLogin() {
     try {
-      const response = await signIn("google", { callbackUrl: "/dashboard" });
+      const response = await signIn("google", { callbackUrl: `${returnUrl || "/dashboard"}` });
     } catch (error) {
       toast({
         variant: "destructive",

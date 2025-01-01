@@ -17,21 +17,21 @@ export async function GET() {
     const userMessages = await UserModel.aggregate([
       {
         $match: {
-          email: userEmail // Corrected field name
+          email: userEmail // Match the correct user
         }
       },
       {
-        $unwind: "$messages"
+        $unwind: "$messages" // Break down the messages array
       },
       {
         $sort: {
-          "messages.createdAt": -1 // Corrected field path for sorting
+          "messages.createdAt": -1 // Sort by creation date
         }
       },
       {
         $group: {
           _id: "$_id",
-          messages: { $push: "$messages" } // Corrected array field to push only the unwound messages
+          messages: { $push: "$messages" } // Reconstruct the messages array
         }
       }
     ]);

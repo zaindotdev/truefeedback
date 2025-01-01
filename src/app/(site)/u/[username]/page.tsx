@@ -1,6 +1,14 @@
 "use client";
-import React from "react";
-import { Send, Shield, Lock, MessageSquare, Loader2, AlertTriangleIcon } from "lucide-react";
+import React, { useEffect } from "react";
+import {
+  Send,
+  Shield,
+  Lock,
+  MessageSquare,
+  Loader2,
+  AlertTriangleIcon,
+  ArrowLeft,
+} from "lucide-react";
 import {
   Card,
   CardContent,
@@ -19,7 +27,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { z } from "zod";
 import { messageSchema } from "@/schemas/messageSchema";
 import { useForm } from "react-hook-form";
@@ -35,8 +43,23 @@ const User = () => {
   const sanitizedUsername = Array.isArray(username)
     ? username[0].replace("%20", " ")
     : username?.replace("%20", " ");
+  const searchParams = useSearchParams();
+  const category = searchParams.get("category");
 
   const [isSubmitting, setIsSubmitting] = React.useState<boolean>(false);
+  const router = useRouter();
+
+  useEffect(() => { 
+    if (status === "unauthenticated") {
+      toast({
+        variant: "destructive",
+        title: "Unauthorized",
+        description: "You must be signed in to send feedback.",
+      })
+      const returnUrl = window.location.pathname + window.location.search;
+      router.push(`/signin?returnUrl=${encodeURIComponent(returnUrl)}`);
+    }
+  },[status, router]);
 
   const form = useForm<z.infer<typeof messageSchema>>({
     defaultValues: {
@@ -44,51 +67,55 @@ const User = () => {
     },
     resolver: zodResolver(messageSchema),
   });
- async function onSubmit(values: z.infer<typeof messageSchema>) {
-   setIsSubmitting(true);
-   try {
-          // Proceed to send the message if not messaging themselves
-     const response = await axios.post(`/api/send-message`, {
-       username: sanitizedUsername,
-       content: values.content,
-     });
+  async function onSubmit(values: z.infer<typeof messageSchema>) {
+    setIsSubmitting(true);
+    try {
+      // Proceed to send the message if not messaging themselves
+      const response = await axios.post(`/api/send-message`, {
+        username: sanitizedUsername,
+        content: values.content,
+        category,
+      });
 
-     if (response.status !== 200) {
-       toast({
-         variant: "destructive",
-         title: "Message failed to send",
-         description: "The user might not want to receive the message.",
-       });
-       return;
-     }
+      if (response.status !== 200) {
+        toast({
+          variant: "destructive",
+          title: "Message failed to send",
+          description: "The user might not want to receive the message.",
+        });
+        return;
+      }
 
-     form.reset();
-     toast({
-       title: "Feedback sent",
-       description: "Your feedback has been successfully submitted.",
-     });
-   } catch (error) {
-     if (error instanceof Error) {
-       toast({
-         variant: "destructive",
-         title: "Message failed to send",
-         description: "There was an error processing your request.",
-       });
-     }
-   } finally {
-     setIsSubmitting(false);
-   }
- }
+      form.reset();
+      toast({
+        title: "Feedback sent",
+        description: "Your feedback has been successfully submitted.",
+      });
+    } catch (error) {
+      if (error instanceof Error) {
+        toast({
+          variant: "destructive",
+          title: "Message failed to send",
+          description: "There was an error processing your request.",
+        });
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
-   if (status === "loading") {
-     return (
-       <div className="min-h-screen flex items-center justify-center">
-         <Loader2 className="animate-spin w-10 h-10" />
-       </div>
-     );
-   }
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="animate-spin w-10 h-10" />
+      </div>
+    );
+  }
 
-  if(session?.user.username === sanitizedUsername || session?.user.name === sanitizedUsername) {
+  if (
+    session?.user.username === sanitizedUsername ||
+    session?.user.name === sanitizedUsername
+  ) {
     return (
       <div className="flex justify-center p-8">
         <Alert variant={"destructive"}>
@@ -155,7 +182,11 @@ const User = () => {
                 />
 
                 {/* Submit Button */}
-                <div className="flex justify-end">
+                <div className="flex justify-end items-center gap-2">
+                  <Button type="button" variant={"ghost"} onClick={() => router.replace("/dashboard")}>
+                    <ArrowLeft />
+                    Back to Dashboard
+                  </Button>
                   <Button
                     disabled={isSubmitting}
                     type="submit"
