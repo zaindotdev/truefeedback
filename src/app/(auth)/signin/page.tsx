@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-
+import { Suspense, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -16,19 +16,18 @@ import {
 import { Input } from "@/components/ui/input";
 import { signInSchema } from "@/schemas/signInSchema";
 import Link from "next/link";
-import { signIn, useSession, SignInOptions } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { FaGoogle } from "react-icons/fa";
 
-export default function SignIn() {
+function SignInForm() {
   const { toast } = useToast();
   const router = useRouter();
   const { data: session, status } = useSession();
   const searchParams = useSearchParams();
-  const returnUrl = searchParams.get("returnUrl");
+  const returnUrl = searchParams?.get("returnUrl");
 
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
@@ -44,27 +43,22 @@ export default function SignIn() {
     if (status === "authenticated") {
       router.push(returnUrl || "/dashboard");
     }
-  }, [status, router, returnUrl, toast]);
+  }, [status, router, returnUrl]);
 
-  // Credential Sign-In Function
   async function onSubmit(values: z.infer<typeof signInSchema>) {
     setIsSubmitting(true);
 
     const response = await signIn("credentials", {
-      redirect: false, // Handle redirection manually
+      redirect: false,
       identifier: values.identifier,
       password: values.password,
     });
 
     if (response?.ok) {
-      const sanitizedIdentifier = values.identifier.replace(/\s+/g, "-");
-
       toast({
         title: "Welcome Back!",
         description: "You have successfully logged in.",
       });
-
-      // Redirect to dashboard with sanitized identifier
       router.replace(`/dashboard`);
     } else {
       toast({
@@ -73,14 +67,12 @@ export default function SignIn() {
         description: "Please check your email and password.",
       });
     }
-
     setIsSubmitting(false);
   }
 
-  // Google Sign-In Function
   async function handleGoogleLogin() {
     try {
-      const response = await signIn("google", { callbackUrl: `${returnUrl || "/dashboard"}` });
+      await signIn("google", { callbackUrl: returnUrl || "/dashboard" });
     } catch (error) {
       toast({
         variant: "destructive",
@@ -89,6 +81,7 @@ export default function SignIn() {
       });
     }
   }
+
   return (
     <section className="w-full flex justify-center items-center p-8 min-h-screen">
       <div className="space-y-8 border-2 dark:border-white border-black p-8 rounded-xl container max-w-md max-h-fit">
@@ -146,10 +139,18 @@ export default function SignIn() {
         </div>
         <div className="flex items-center justify-center">
           <Button variant={"secondary"} onClick={handleGoogleLogin}>
-            <FaGoogle/>Continue with Google
+            <FaGoogle /> Continue with Google
           </Button>
         </div>
       </div>
     </section>
+  );
+}
+
+export default function SignIn() {
+  return (
+    <Suspense fallback={<div><Loader2 className="animate-spin" /></div>}>
+      <SignInForm />
+    </Suspense>
   );
 }
