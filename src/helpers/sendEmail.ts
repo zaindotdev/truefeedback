@@ -1,15 +1,15 @@
 import { ApiResponse } from "@/types/types";
-import sgMail from "@sendgrid/mail";
+import { Resend } from "resend";
 
-sgMail.setApiKey(process.env.SEND_GRID_API_KEY as string);
+const resend = new Resend(process.env.RESEND_API_KEY!);
 
 const sendEmail = async (username: string, email: string, otp: string): Promise<ApiResponse> => {
-  try {
-    const msg = {
-      to: email,
-      from: "zaindeveloperr@gmail.com",
-      subject: "Verify your email",
-      html: `
+   try {
+    const { data, error } = await resend.emails.send({
+      from: 'Acme <no-reply@interview-ai.live>',
+      to: [email],
+      subject: 'Hello world',
+      html:`
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px; background-color: #f9f9f9;">
             <div style="text-align: center; margin-bottom: 20px;">
               <img src="https://your-logo-url.com/logo.png" alt="True Feedback Logo" style="width: 100px; height: auto;">
@@ -29,11 +29,19 @@ const sendEmail = async (username: string, email: string, otp: string): Promise<
             </div>
           </div>
           `
-    }
+    });
 
-    const response = await sgMail.send(msg);
+    if (error) {
+      console.error(error);
+      return {
+        data: error as any,
+        message: "Error sending email",
+        success: false,
+      }
+    }
+    
     return {
-      data: response as any,
+      data: data as any,
       message: "Email sent successfully",
       success: true,
     }
